@@ -1,9 +1,10 @@
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GoldFinanceApp extends JFrame {
     private FinanceManager manager;
@@ -21,14 +22,14 @@ public class GoldFinanceApp extends JFrame {
 
         // Input Panel
         JPanel inputPanel = new JPanel(new GridLayout(2, 4, 10, 10));
-        JTextField dateField = new JTextField();
+        JTextField dateField = new JTextField("2025-11-09");
         JTextField descField = new JTextField();
         JTextField amountField = new JTextField();
         String[] types = {"Pemasukan", "Pengeluaran"};
         JComboBox<String> typeBox = new JComboBox<>(types);
         JButton addButton = new JButton("➕ Tambah Transaksi");
 
-        inputPanel.add(new JLabel("Tanggal:"));
+        inputPanel.add(new JLabel("Tanggal (yyyy-MM-dd):"));
         inputPanel.add(dateField);
         inputPanel.add(new JLabel("Deskripsi:"));
         inputPanel.add(descField);
@@ -52,7 +53,7 @@ public class GoldFinanceApp extends JFrame {
         // Add Button Action
         addButton.addActionListener(e -> {
             try {
-                String tanggal = dateField.getText();
+                LocalDate tanggal = LocalDate.parse(dateField.getText(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 String deskripsi = descField.getText();
                 double jumlah = Double.parseDouble(amountField.getText());
                 String tipe = (String) typeBox.getSelectedItem();
@@ -60,13 +61,13 @@ public class GoldFinanceApp extends JFrame {
                 manager.addTransaction(new Transaction(tanggal, deskripsi, jumlah, tipe));
                 tableModel.addRow(new Object[]{tanggal, deskripsi, jumlah, tipe});
 
-                balanceLabel.setText("Saldo: Rp " + manager.getBalance());
+                balanceLabel.setText("Saldo: Rp " + manager.getTotalBalance());
                 chartPanel.updateChart(manager.getTransactions());
-                dateField.setText("");
+                dateField.setText(LocalDate.now().toString());
                 descField.setText("");
                 amountField.setText("");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Input tidak valid!");
+                JOptionPane.showMessageDialog(this, "Input tidak valid! Pastikan format tanggal yyyy-MM-dd dan jumlah angka.");
             }
         });
 
@@ -91,8 +92,10 @@ public class GoldFinanceApp extends JFrame {
             pemasukan = 0;
             pengeluaran = 0;
             for (Transaction t : transactions) {
-                if (t.getType().equals("Pemasukan")) pemasukan += t.getAmount();
-                else pengeluaran += t.getAmount();
+                if (t.getType().equalsIgnoreCase("Pemasukan"))
+                    pemasukan += t.getAmount();
+                else
+                    pengeluaran += t.getAmount();
             }
             repaint();
         }
@@ -129,5 +132,53 @@ public class GoldFinanceApp extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new GoldFinanceApp().setVisible(true));
+    }
+}
+
+// -------------------- Transaction.java --------------------
+class Transaction {
+    private LocalDate date;
+    private String description;
+    private double amount;
+    private String type;
+
+    public Transaction(LocalDate date, String description, double amount, String type) {
+        this.date = date;
+        this.description = description;
+        this.amount = amount;
+        this.type = type;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+    public String getDescription() {
+        return description;
+    }
+    public double getAmount() {
+        return amount;
+    }
+    public String getType() {
+        return type;
+    }
+    public double getEffectiveAmount() {
+        return type.equalsIgnoreCase("Pemasukan") ? amount : -amount;
+    }
+}
+
+// -------------------- FinanceManager.java --------------------
+class FinanceManager {
+    private final List<Transaction> transactions = new ArrayList<>();
+
+    public void addTransaction(Transaction transaction) {
+        transactions.add(transaction);
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public double getTotalBalance() {
+        return transactions.stream().mapToDouble(Transaction::getEffectiveAmount).sum();
     }
 }
