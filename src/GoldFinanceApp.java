@@ -1,123 +1,129 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GoldFinanceApp extends JFrame {
-    private final FinanceManager financeManager;
-    private final JTextField txtDate, txtDescription, txtAmount;
-    private final JComboBox<String> cbType;
-    private final JLabel lblBalance;
-    private final DefaultTableModel tableModel;
-    private final JButton btnAdd;
+    private FinanceManager manager;
+    private DefaultTableModel tableModel;
+    private JLabel balanceLabel;
+    private ChartPanel chartPanel;
 
     public GoldFinanceApp() {
-        financeManager = new FinanceManager();
+        manager = new FinanceManager();
 
-        setTitle("GoldFinance — Keuangan Pribadi Elegan");
+        setTitle("💰 GoldFinance - Aplikasi Keuangan");
+        setSize(700, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(700, 500);
         setLocationRelativeTo(null);
 
-        // panel utama
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBackground(new Color(255, 250, 230));
-        add(panel);
+        // Input Panel
+        JPanel inputPanel = new JPanel(new GridLayout(2, 4, 10, 10));
+        JTextField dateField = new JTextField();
+        JTextField descField = new JTextField();
+        JTextField amountField = new JTextField();
+        String[] types = {"Pemasukan", "Pengeluaran"};
+        JComboBox<String> typeBox = new JComboBox<>(types);
+        JButton addButton = new JButton("➕ Tambah Transaksi");
 
-        // === PANEL INPUT ===
-        JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new GridBagLayout());
-        inputPanel.setBackground(new Color(255, 250, 230));
+        inputPanel.add(new JLabel("Tanggal:"));
+        inputPanel.add(dateField);
+        inputPanel.add(new JLabel("Deskripsi:"));
+        inputPanel.add(descField);
+        inputPanel.add(new JLabel("Jumlah:"));
+        inputPanel.add(amountField);
+        inputPanel.add(new JLabel("Tipe:"));
+        inputPanel.add(typeBox);
 
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(5, 5, 5, 5);
-        c.fill = GridBagConstraints.HORIZONTAL;
-
-        // Tanggal
-        c.gridx = 0; c.gridy = 0;
-        inputPanel.add(new JLabel("Tanggal (YYYY-MM-DD):"), c);
-        txtDate = new JTextField();
-        c.gridx = 1; c.gridy = 0; c.gridwidth = 2;
-        inputPanel.add(txtDate, c);
-
-        // Keterangan
-        c.gridx = 0; c.gridy = 1; c.gridwidth = 1;
-        inputPanel.add(new JLabel("Keterangan:"), c);
-        txtDescription = new JTextField();
-        c.gridx = 1; c.gridy = 1; c.gridwidth = 2;
-        inputPanel.add(txtDescription, c);
-
-        // Jumlah
-        c.gridx = 0; c.gridy = 2; c.gridwidth = 1;
-        inputPanel.add(new JLabel("Jumlah (Rp):"), c);
-        txtAmount = new JTextField();
-        c.gridx = 1; c.gridy = 2; c.gridwidth = 2;
-        inputPanel.add(txtAmount, c);
-
-        // Tipe Transaksi
-        c.gridx = 0; c.gridy = 3; c.gridwidth = 1;
-        inputPanel.add(new JLabel("Tipe Transaksi:"), c);
-        cbType = new JComboBox<>(new String[]{"Pemasukan", "Pengeluaran"});
-        c.gridx = 1; c.gridy = 3; c.gridwidth = 2;
-        inputPanel.add(cbType, c);
-
-        // Tombol Tambah
-        btnAdd = new JButton("➕ Tambah Transaksi");
-        btnAdd.setBackground(new Color(230, 230, 255));
-        btnAdd.setFocusPainted(false);
-        btnAdd.addActionListener(e -> addTransaction());
-
-        c.gridx = 0; c.gridy = 4; c.gridwidth = 3;
-        inputPanel.add(btnAdd, c);
-
-        panel.add(inputPanel, BorderLayout.NORTH);
-
-        // === TABEL HISTORI ===
-        String[] columns = {"Tanggal", "Keterangan", "Jumlah (Rp)", "Tipe"};
-        tableModel = new DefaultTableModel(columns, 0);
+        // Table
+        tableModel = new DefaultTableModel(new String[]{"Tanggal", "Deskripsi", "Jumlah", "Tipe"}, 0);
         JTable table = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(table);
-        panel.add(scrollPane, BorderLayout.CENTER);
 
-        // === LABEL SALDO ===
-        lblBalance = new JLabel("Total Saldo: Rp 0", SwingConstants.CENTER);
-        lblBalance.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblBalance.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-        panel.add(lblBalance, BorderLayout.SOUTH);
+        // Balance Label
+        balanceLabel = new JLabel("Saldo: Rp 0");
+        balanceLabel.setFont(new Font("Arial", Font.BOLD, 16));
+
+        // Chart Panel
+        chartPanel = new ChartPanel();
+
+        // Add Button Action
+        addButton.addActionListener(e -> {
+            try {
+                String tanggal = dateField.getText();
+                String deskripsi = descField.getText();
+                double jumlah = Double.parseDouble(amountField.getText());
+                String tipe = (String) typeBox.getSelectedItem();
+
+                manager.addTransaction(new Transaction(tanggal, deskripsi, jumlah, tipe));
+                tableModel.addRow(new Object[]{tanggal, deskripsi, jumlah, tipe});
+
+                balanceLabel.setText("Saldo: Rp " + manager.getBalance());
+                chartPanel.updateChart(manager.getTransactions());
+                dateField.setText("");
+                descField.setText("");
+                amountField.setText("");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Input tidak valid!");
+            }
+        });
+
+        // Layout
+        setLayout(new BorderLayout(10, 10));
+        add(inputPanel, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
+
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(addButton, BorderLayout.NORTH);
+        bottomPanel.add(balanceLabel, BorderLayout.CENTER);
+        bottomPanel.add(chartPanel, BorderLayout.SOUTH);
+        add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    // === METHOD TAMBAH TRANSAKSI ===
-    private void addTransaction() {
-        try {
-            LocalDate date = LocalDate.parse(txtDate.getText().trim());
-            String desc = txtDescription.getText().trim();
-            double amount = Double.parseDouble(txtAmount.getText().trim());
-            String type = (String) cbType.getSelectedItem();
+    // Panel untuk menggambar grafik
+    static class ChartPanel extends JPanel {
+        private double pemasukan = 0;
+        private double pengeluaran = 0;
 
-            Transaction transaction = new Transaction(date, desc, amount, type);
-            financeManager.addTransaction(transaction);
+        public void updateChart(List<Transaction> transactions) {
+            pemasukan = 0;
+            pengeluaran = 0;
+            for (Transaction t : transactions) {
+                if (t.getType().equals("Pemasukan")) pemasukan += t.getAmount();
+                else pengeluaran += t.getAmount();
+            }
+            repaint();
+        }
 
-            // Tambahkan ke tabel
-            tableModel.addRow(new Object[]{
-                    transaction.getDate(),
-                    transaction.getDescription(),
-                    String.format("Rp %, .0f", transaction.getAmount()),
-                    transaction.getType()
-            });
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            int width = getWidth();
+            int height = getHeight();
+            int barWidth = width / 4;
+            int maxBarHeight = (int) (height * 0.7);
+            double maxValue = Math.max(pemasukan, pengeluaran);
 
-            // Update saldo otomatis
-            double total = financeManager.getTotalBalance();
-            lblBalance.setText(String.format("Total Saldo: Rp %, .0f", total));
+            if (maxValue == 0) return;
 
-            // Bersihkan input
-            txtDescription.setText("");
-            txtAmount.setText("");
+            int pemasukanHeight = (int) (maxBarHeight * (pemasukan / maxValue));
+            int pengeluaranHeight = (int) (maxBarHeight * (pengeluaran / maxValue));
 
-        } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Format tanggal salah! Gunakan YYYY-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Jumlah harus berupa angka!", "Error", JOptionPane.ERROR_MESSAGE);
+            g.setColor(Color.GREEN);
+            g.fillRect(width / 4 - barWidth / 2, height - pemasukanHeight - 30, barWidth, pemasukanHeight);
+            g.setColor(Color.RED);
+            g.fillRect(3 * width / 4 - barWidth / 2, height - pengeluaranHeight - 30, barWidth, pengeluaranHeight);
+
+            g.setColor(Color.BLACK);
+            g.drawString("Pemasukan", width / 4 - 40, height - 10);
+            g.drawString("Pengeluaran", 3 * width / 4 - 45, height - 10);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(600, 200);
         }
     }
 
@@ -125,5 +131,3 @@ public class GoldFinanceApp extends JFrame {
         SwingUtilities.invokeLater(() -> new GoldFinanceApp().setVisible(true));
     }
 }
-
-
