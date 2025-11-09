@@ -10,61 +10,84 @@ public class GoldFinanceApp extends JFrame {
     private final JComboBox<String> cbType;
     private final JLabel lblBalance;
     private final DefaultTableModel tableModel;
+    private final JButton btnAdd;
 
     public GoldFinanceApp() {
         financeManager = new FinanceManager();
 
         setTitle("GoldFinance — Keuangan Pribadi Elegan");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(650, 450);
+        setSize(700, 500);
         setLocationRelativeTo(null);
 
-        // Panel utama
-        JPanel panel = new JPanel(new BorderLayout());
+        // panel utama
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(new Color(255, 250, 230));
         add(panel);
 
-        // --- Panel input ---
-        JPanel inputPanel = new JPanel(new GridLayout(5, 2, 8, 8));
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // === PANEL INPUT ===
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new GridBagLayout());
         inputPanel.setBackground(new Color(255, 250, 230));
 
-        inputPanel.add(new JLabel("Tanggal (YYYY-MM-DD):"));
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(5, 5, 5, 5);
+        c.fill = GridBagConstraints.HORIZONTAL;
+
+        // Tanggal
+        c.gridx = 0; c.gridy = 0;
+        inputPanel.add(new JLabel("Tanggal (YYYY-MM-DD):"), c);
         txtDate = new JTextField();
-        inputPanel.add(txtDate);
+        c.gridx = 1; c.gridy = 0; c.gridwidth = 2;
+        inputPanel.add(txtDate, c);
 
-        inputPanel.add(new JLabel("Keterangan:"));
+        // Keterangan
+        c.gridx = 0; c.gridy = 1; c.gridwidth = 1;
+        inputPanel.add(new JLabel("Keterangan:"), c);
         txtDescription = new JTextField();
-        inputPanel.add(txtDescription);
+        c.gridx = 1; c.gridy = 1; c.gridwidth = 2;
+        inputPanel.add(txtDescription, c);
 
-        inputPanel.add(new JLabel("Jumlah (Rp):"));
+        // Jumlah
+        c.gridx = 0; c.gridy = 2; c.gridwidth = 1;
+        inputPanel.add(new JLabel("Jumlah (Rp):"), c);
         txtAmount = new JTextField();
-        inputPanel.add(txtAmount);
+        c.gridx = 1; c.gridy = 2; c.gridwidth = 2;
+        inputPanel.add(txtAmount, c);
 
-        inputPanel.add(new JLabel("Tipe Transaksi:"));
+        // Tipe Transaksi
+        c.gridx = 0; c.gridy = 3; c.gridwidth = 1;
+        inputPanel.add(new JLabel("Tipe Transaksi:"), c);
         cbType = new JComboBox<>(new String[]{"Pemasukan", "Pengeluaran"});
-        inputPanel.add(cbType);
+        c.gridx = 1; c.gridy = 3; c.gridwidth = 2;
+        inputPanel.add(cbType, c);
 
-        JButton btnAdd = new JButton("Tambah Transaksi");
+        // Tombol Tambah
+        btnAdd = new JButton("➕ Tambah Transaksi");
+        btnAdd.setBackground(new Color(230, 230, 255));
+        btnAdd.setFocusPainted(false);
         btnAdd.addActionListener(e -> addTransaction());
-        inputPanel.add(btnAdd);
+
+        c.gridx = 0; c.gridy = 4; c.gridwidth = 3;
+        inputPanel.add(btnAdd, c);
 
         panel.add(inputPanel, BorderLayout.NORTH);
 
-        // --- Tabel histori transaksi ---
+        // === TABEL HISTORI ===
         String[] columns = {"Tanggal", "Keterangan", "Jumlah (Rp)", "Tipe"};
         tableModel = new DefaultTableModel(columns, 0);
         JTable table = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(table);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // --- Label saldo ---
+        // === LABEL SALDO ===
         lblBalance = new JLabel("Total Saldo: Rp 0", SwingConstants.CENTER);
         lblBalance.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblBalance.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         panel.add(lblBalance, BorderLayout.SOUTH);
     }
 
+    // === METHOD TAMBAH TRANSAKSI ===
     private void addTransaction() {
         try {
             LocalDate date = LocalDate.parse(txtDate.getText().trim());
@@ -83,7 +106,7 @@ public class GoldFinanceApp extends JFrame {
                     transaction.getType()
             });
 
-            // Update saldo
+            // Update saldo otomatis
             double total = financeManager.getTotalBalance();
             lblBalance.setText(String.format("Total Saldo: Rp %, .0f", total));
 
@@ -102,4 +125,5 @@ public class GoldFinanceApp extends JFrame {
         SwingUtilities.invokeLater(() -> new GoldFinanceApp().setVisible(true));
     }
 }
+
 
