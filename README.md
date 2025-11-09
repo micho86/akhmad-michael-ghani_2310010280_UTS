@@ -3,18 +3,20 @@
 Nama: Akhmad Michael Ghani
 NPM: 2310010280
 Kelas: 5A
-✨ Fitur Utama
+
+
+Fitur Utama
 🔸 Manajemen Transaksi
-  ➕ Tambah Transaksi Baru — menambahkan data pemasukan atau pengeluaran.
-  📝 Edit Transaksi — mengubah data transaksi yang telah tersimpan.
-  ❌ Hapus Transaksi — menghapus transaksi dari daftar.
-  📜 Tampilkan Semua Transaksi — menampilkan seluruh data transaksi yang tercatat.
+  #➕ Tambah Transaksi Baru — menambahkan data pemasukan atau pengeluaran.
+  #📝 Edit Transaksi — mengubah data transaksi yang telah tersimpan.
+  #❌ Hapus Transaksi — menghapus transaksi dari daftar.
+  #📜 Tampilkan Semua Transaksi — menampilkan seluruh data transaksi yang tercatat.
 🔸 Manajemen Keuangan
-  💰 Hitung Total Saldo — otomatis menghitung selisih antara pemasukan dan pengeluaran.
-  🔍 Filter Data (opsional) — dapat ditambahkan untuk melihat transaksi berdasarkan tanggal atau tipe.
+  #💰 Hitung Total Saldo — otomatis menghitung selisih antara pemasukan dan pengeluaran.
+  #🔍 Filter Data (opsional) — dapat ditambahkan untuk melihat transaksi berdasarkan tanggal atau tipe.
 🔸 Desain & Tema
-  🎨 Tampilan Emas Elegan — desain lembut berwarna emas (#FFD700) dan putih gading.
-  🪄 User-Friendly Interface — tata letak sederhana dengan navigasi yang mudah dipahami.
+  #🎨 Tampilan Emas Elegan — desain lembut berwarna emas (#FFD700) dan putih gading.
+  #🪄 User-Friendly Interface — tata letak sederhana dengan navigasi yang mudah dipahami.
 
   🪄 Cara Menjalankan Program
 🧩 Prasyarat
@@ -28,3 +30,4 @@ javac src/Main.java src/Transaction.java src/FinanceManager.java src/GoldFinance
 
 # 2️⃣ Jalankan program
 java src/GoldFinanceApp
+
